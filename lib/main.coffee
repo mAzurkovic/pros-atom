@@ -2,7 +2,8 @@
 {RegisterProjectView} = require './views/register-project/register-project-view'
 {UpgradeProjectView} = require './views/upgrade-project/upgrade-project-view'
 {TerminalView} = require './views/terminal/terminal-view'
-{Disposable} = require 'atom'
+{AboutView} = require './views/about-pros/about-view'
+{Disposable, CompositeDisposable} = require 'atom'
 fs = require 'fs'
 cli = require './cli'
 {consumeDisplayConsole} = require './terminal-utilities'
@@ -19,6 +20,7 @@ module.exports =
     require('atom-package-deps').install('pros').then () =>
       if config.settings('').override_beautify_provider
         atom.config.set('atom-beautify.c.default_beautifier', 'clang-format')
+      @subscriptions = new CompositeDisposable
       lint.activate()
       autocomplete.activate()
       @newProjectViewProvider = NewProjectView.register
@@ -45,6 +47,8 @@ module.exports =
         'PROS:Upload-Project': => @uploadProject()
       atom.commands.add 'atom-workspace',
         'PROS:Toggle-Terminal': => @toggleTerminal()
+      atom.commands.add 'atom-workspace',
+        'PROS:About': => @aboutPage()
 
       cli.execute(((c, o) -> console.log o),
         cli.baseCommand().concat ['conduct', 'first-run', '--no-force', '--use-defaults'])
@@ -52,6 +56,16 @@ module.exports =
       @terminalViewPanel.toggle()
       @terminalViewPanel.toggle()
 
+      @subscriptions.add atom.workspace.addOpener((uri) ->
+        switch uri
+          when 'pros://about' then return new AboutView(uri)
+          # Add more URIs if necessary
+      )
+      # Can add more emitter things to subscriptions if necessary
+
+      # Show about page on start
+      atom.workspace.open 'pros://about'
+      
   consumeLinter: lint.consumeLinter
 
   uploadProject: ->
@@ -107,6 +121,9 @@ module.exports =
     }
 
     @toolBar.onDidDestroy => @toolBar = null
+
+  aboutPage: ->
+    atom.workspace.open 'pros://about'
 
   autocompleteProvider: ->
     autocomplete.provide()
