@@ -66,11 +66,6 @@ module.exports =
         atom.config.set 'pros.welcome.enabled',
           $(this).find('#pros-welcome-on-startup').prop 'checked'
 
-      $(this).find('#pros-ga-enabled').prop('checked', atom.config.get 'pros.googleAnalytics.enabled')
-      $(this).find('#pros-ga-enabled').click =>
-        atom.config.set 'pros.googleAnalytics.enabled',
-          $(this).find('#pros-ga-enabled').prop 'checked'
-
       cliVer = 'Loading'
       cli.execute ((c, o) => cliVer = @cliVersion[0].textContent = /pros, version (.*)/g.exec(o)[1]), cli.baseCommand '--version'
       pkgVer = @pkgVersion[0].textContent = require('../../../package.json').version
